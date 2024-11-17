@@ -96,6 +96,7 @@ vulnerabilitiesCommand
   .description('Dismiss a vulnerability alert')
   .requiredOption('--alert-number <number>', 'Alert number to dismiss')
   .requiredOption('--reason <reason>', 'Reason for dismissal (fix-started|inaccurate|no-bandwidth|not-used|tolerable-risk)')
+  .option('--comment <comment>', 'Additional comment for dismissal')
   .action(async (options) => {
     const programOptions = program.opts();
     
@@ -118,6 +119,7 @@ vulnerabilitiesCommand
         console.log('Dry run mode - would dismiss vulnerability:');
         console.log(`Alert Number: ${options.alertNumber}`);
         console.log(`Dismissal Reason: ${options.reason}`);
+        console.log(`Comment: ${options.comment || 'None'}`);
         console.log(`Repository: ${programOptions.repo}`);
         return;
       }
@@ -134,7 +136,8 @@ vulnerabilitiesCommand
         repo,
         alert_number: parseInt(options.alertNumber),
         state: 'dismissed',
-        dismissal_reason: options.reason
+        dismissal_reason: options.reason,
+        ...(options.comment && { message: options.comment })
       });
 
       console.log(`Successfully dismissed alert ${options.alertNumber} with reason: ${options.reason}`);
