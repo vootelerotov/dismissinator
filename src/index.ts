@@ -34,20 +34,20 @@ program
     });
 
     try {
-      const response = await octokit.rest.dependabot.listOrgAlerts({
+      const response = await octokit.rest.dependabot.listAlertsForOrg({
         org: options.org,
         state: 'open'
       });
 
       console.log('Found vulnerabilities:');
-      response.data.forEach(vuln => {
+      response.data.forEach((vuln: any) => {
         console.log(`\nRepository: ${vuln.repository.name}`);
         console.log(`Package: ${vuln.security_vulnerability.package.name}`);
         console.log(`Severity: ${vuln.security_vulnerability.severity}`);
         console.log(`Details: ${vuln.security_vulnerability.description}`);
       });
-    } catch (error) {
-      console.error('Error fetching vulnerabilities:', error.message);
+    } catch (error: any) {
+      console.error('Error fetching vulnerabilities:', error?.message || 'Unknown error');
       process.exit(1);
     }
   });
