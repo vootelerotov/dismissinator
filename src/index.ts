@@ -12,6 +12,8 @@ program
   .version('1.0.0')
   .option('-t, --token <token>', 'GitHub personal access token')
   .option('-o, --org <organization>', 'GitHub organization name')
+  .option('-r, --repo <repository>', 'GitHub repository name')
+  .option('-d, --dry-run', 'Show what would be done without making changes')
   .option('-u, --user <username>', 'GitHub username');
 
 program
@@ -25,8 +27,13 @@ program
       process.exit(1);
     }
 
-    if (!options.org) {
-      console.error('Error: GitHub organization is required. Use -o or --org option.');
+    if (!options.org && !options.repo) {
+      console.error('Error: Either organization (-o, --org) or repository (-r, --repo) must be specified.');
+      process.exit(1);
+    }
+
+    if (options.org && options.repo) {
+      console.error('Error: Cannot specify both organization and repository. Use either -o/--org or -r/--repo.');
       process.exit(1);
     }
 
@@ -35,10 +42,16 @@ program
     });
 
     try {
+      if (options.dryRun) {
+        console.log('Dry run mode - would fetch vulnerabilities for:');
+        console.log(options.org ? `Organization: ${options.org}` : `Repository: ${options.repo}`);
+        return;
+      }
+
       const response = await octokit.rest.dependabot.listAlertsForRepo({
         state: 'open',
-        owner: 'sympower',
-        repo: 'msa-greece-resource-selection'
+        owner: options.org || options.user || 'sympower',
+        repo: options.repo || 'msa-greece-resource-selection'
       });
 
       console.log('Found vulnerabilities:');
