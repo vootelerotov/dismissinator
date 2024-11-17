@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Simple file command-line tool",
   "main": "dist/index.js",
+  "type": "module",
   "bin": {
     "disseminator": "dist/index.js"
   },
