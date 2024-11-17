@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { Octokit } from '@octokit/rest/dist-types/index.js';
+import { Octokit } from '@octokit/rest';
 
 const program = new Command();
 
