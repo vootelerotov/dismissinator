@@ -95,9 +95,9 @@ vulnerabilitiesCommand
   .command('dismiss')
   .description('Dismiss a vulnerability alert')
   .requiredOption('--alert-number <number>', 'Alert number to dismiss')
-  .requiredOption('--reason <reason>', 'Reason for dismissal (fix-started|inaccurate|no-bandwidth|not-used|tolerable-risk)')
-  .addOption(new Command.Option('--reason <reason>')
-    .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk']))
+  .addOption(new Command.Option('--reason <reason>', 'Reason for dismissal')
+    .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk'])
+    .makeOptionMandatory())
   .option('--comment <comment>', 'Additional comment for dismissal')
   .action(async (options) => {
     const programOptions = program.opts();
