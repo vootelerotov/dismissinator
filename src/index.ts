@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { Octokit } from '@octokit/rest';
+import type { components } from "@octokit/openapi-types";
 
 const program = new Command();
 
@@ -41,11 +42,14 @@ program
       });
 
       console.log('Found vulnerabilities:');
-      response.data.forEach((vuln: any) => {
-        console.log(`\nRepository: ${vuln.repository.name}`);
-        console.log(`Package: ${vuln.security_vulnerability.package.name}`);
-        console.log(`Severity: ${vuln.security_vulnerability.severity}`);
-        console.log(`Details: ${vuln.security_vulnerability.description}`);
+      response.data.forEach((alert: components["schemas"]["dependabot-alert"]) => {
+        console.log(`\nAlert Number: ${alert.number}`);
+        console.log(`State: ${alert.state}`);
+        console.log(`Security Advisory: ${alert.security_advisory?.summary}`);
+        console.log(`Package Name: ${alert.dependency?.package?.name}`);
+        console.log(`Severity: ${alert.security_advisory?.severity}`);
+        console.log(`CVSS Score: ${alert.security_advisory?.cvss?.score}`);
+        console.log(`Created: ${alert.created_at}`);
       });
     } catch (error: any) {
       console.error('Error fetching vulnerabilities:', error?.message || 'Unknown error');
