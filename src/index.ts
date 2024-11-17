@@ -12,7 +12,7 @@ program
   .version('1.0.0')
   .option('-t, --token <token>', 'GitHub personal access token')
   .option('-o, --org <organization>', 'GitHub organization name')
-  .option('-r, --repo <repository>', 'GitHub repository name')
+  .option('-r, --repo <repository>', 'GitHub repository in format owner/repo')
   .option('-d, --dry-run', 'Show what would be done without making changes')
   .option('-u, --user <username>', 'GitHub username');
 
@@ -37,6 +37,18 @@ program
       process.exit(1);
     }
 
+    let owner: string;
+    let repo: string;
+
+    if (options.repo) {
+      const parts = options.repo.split('/');
+      if (parts.length !== 2) {
+        console.error('Error: Repository must be in format owner/repo');
+        process.exit(1);
+      }
+      [owner, repo] = parts;
+    }
+
     const octokit = new Octokit({
       auth: options.token
     });
@@ -50,8 +62,8 @@ program
 
       const response = await octokit.rest.dependabot.listAlertsForRepo({
         state: 'open',
-        owner: options.org || options.user || 'sympower',
-        repo: options.repo || 'msa-greece-resource-selection'
+        owner: options.org || owner || options.user || 'sympower',
+        repo: repo || 'msa-greece-resource-selection'
       });
 
       console.log('Found vulnerabilities:');
