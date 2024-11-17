@@ -1,4 +1,7 @@
 #!/bin/bash
 
-# Pass all arguments directly to the vulnerabilities command
-npm run dev -- vulnerabilities "$@"
+# Build the TypeScript code first
+npm run build
+
+# Run the compiled version with the provided arguments
+npm start -- vulnerabilities "$@"
