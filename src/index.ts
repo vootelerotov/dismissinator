@@ -18,7 +18,9 @@ program
 
 program
   .command('vulnerabilities')
-  .description('Get vulnerabilities for the organization')
+  .description('Get vulnerabilities for the organization or repository')
+  .command('list')
+  .description('List open vulnerability alerts')
   .action(async () => {
     const options = program.opts();
     
@@ -60,14 +62,25 @@ program
         return;
       }
 
-      const response = await octokit.rest.dependabot.listAlertsForRepo({
-        state: 'open',
-        owner: options.org || owner || options.user,
-        repo: repo
-      });
+      let alerts: components["schemas"]["dependabot-alert"][] = [];
+
+      if (options.org) {
+        const response = await octokit.rest.dependabot.listAlertsForOrg({
+          org: options.org,
+          state: 'open'
+        });
+        alerts = response.data;
+      } else {
+        const response = await octokit.rest.dependabot.listAlertsForRepo({
+          owner: owner,
+          repo: repo,
+          state: 'open'
+        });
+        alerts = response.data;
+      }
 
       console.log('Found vulnerabilities:');
-      response.data.forEach((alert: components["schemas"]["dependabot-alert"]) => {
+      alerts.forEach((alert: components["schemas"]["dependabot-alert"]) => {
         console.log(`\nAlert Number: ${alert.number}`);
         console.log(`State: ${alert.state}`);
         console.log(`Security Advisory: ${alert.security_advisory?.summary}`);
