@@ -39,18 +39,6 @@ program
       process.exit(1);
     }
 
-    let owner: string;
-    let repo: string;
-
-    if (options.repo) {
-      const parts = options.repo.split('/');
-      if (parts.length !== 2) {
-        console.error('Error: Repository must be in format owner/repo');
-        process.exit(1);
-      }
-      [owner, repo] = parts;
-    }
-
     const octokit = new Octokit({
       auth: options.token
     });
@@ -71,6 +59,12 @@ program
         });
         alerts = response.data;
       } else {
+        const parts = options.repo.split('/');
+        if (parts.length !== 2) {
+          console.error('Error: Repository must be in format owner/repo');
+          process.exit(1);
+        }
+        const [owner, repo] = parts;
         const response = await octokit.rest.dependabot.listAlertsForRepo({
           owner: owner,
           repo: repo,
