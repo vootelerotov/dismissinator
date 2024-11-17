@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# Check if environment variables are set
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo "Error: GITHUB_TOKEN environment variable is not set"
+# Check if arguments are provided
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <github-token> <github-org>"
     exit 1
 fi
 
-if [ -z "$GITHUB_ORG" ]; then
-    echo "Error: GITHUB_ORG environment variable is not set"
-    exit 1
-fi
-
-# Run the vulnerabilities command
-npm run dev -- vulnerabilities -t "$GITHUB_TOKEN" -o "$GITHUB_ORG"
+# Run the vulnerabilities command with provided arguments
+npm run dev -- vulnerabilities -t "$1" -o "$2"
