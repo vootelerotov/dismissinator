@@ -16,9 +16,11 @@ program
   .option('-d, --dry-run', 'Show what would be done without making changes')
   .option('-u, --user <username>', 'GitHub username');
 
-program
+const vulnerabilitiesCommand = program
   .command('vulnerabilities')
-  .description('Get vulnerabilities for the organization or repository')
+  .description('Get vulnerabilities for the organization or repository');
+
+vulnerabilitiesCommand
   .command('list')
   .description('List open vulnerability alerts')
   .action(async () => {
@@ -85,6 +87,59 @@ program
       });
     } catch (error: any) {
       console.error('Error fetching vulnerabilities:', error?.message || 'Unknown error');
+      process.exit(1);
+    }
+  });
+
+vulnerabilitiesCommand
+  .command('dismiss')
+  .description('Dismiss a vulnerability alert')
+  .requiredOption('--alert-number <number>', 'Alert number to dismiss')
+  .requiredOption('--reason <reason>', 'Reason for dismissal (fix-started|inaccurate|no-bandwidth|not-used|tolerable-risk)')
+  .action(async (options) => {
+    const programOptions = program.opts();
+    
+    if (!programOptions.token) {
+      console.error('Error: GitHub token is required. Use -t or --token option.');
+      process.exit(1);
+    }
+
+    if (!programOptions.repo) {
+      console.error('Error: Repository (-r, --repo) must be specified for dismissing alerts.');
+      process.exit(1);
+    }
+
+    const octokit = new Octokit({
+      auth: programOptions.token
+    });
+
+    try {
+      if (programOptions.dryRun) {
+        console.log('Dry run mode - would dismiss vulnerability:');
+        console.log(`Alert Number: ${options.alertNumber}`);
+        console.log(`Dismissal Reason: ${options.reason}`);
+        console.log(`Repository: ${programOptions.repo}`);
+        return;
+      }
+
+      const parts = programOptions.repo.split('/');
+      if (parts.length !== 2) {
+        console.error('Error: Repository must be in format owner/repo');
+        process.exit(1);
+      }
+      const [owner, repo] = parts;
+
+      await octokit.rest.dependabot.updateAlert({
+        owner,
+        repo,
+        alert_number: parseInt(options.alertNumber),
+        state: 'dismissed',
+        dismissal_reason: options.reason
+      });
+
+      console.log(`Successfully dismissed alert ${options.alertNumber} with reason: ${options.reason}`);
+    } catch (error: any) {
+      console.error('Error dismissing vulnerability:', error?.message || 'Unknown error');
       process.exit(1);
     }
   });
