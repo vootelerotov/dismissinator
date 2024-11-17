@@ -137,7 +137,7 @@ vulnerabilitiesCommand
         alert_number: parseInt(options.alertNumber),
         state: 'dismissed',
         dismissal_reason: options.reason,
-        ...(options.comment && { message: options.comment })
+        dismissed_comment: options.comment || "No comment provided"
       });
 
       console.log(`Successfully dismissed alert ${options.alertNumber} with reason: ${options.reason}`);
