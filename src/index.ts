@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { Octokit } from '@octokit/rest';
 import type { components } from "@octokit/openapi-types";
 
@@ -95,8 +95,10 @@ vulnerabilitiesCommand
   .command('dismiss')
   .description('Dismiss a vulnerability alert')
   .requiredOption('--alert-number <number>', 'Alert number to dismiss')
-  .requiredOption('--reason <reason>', 'Reason for dismissal')
-  .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk'])
+  .addOption(new Option('--reason <reason>', 'Reason for dismissal')
+    .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk']
+    )
+  )
   .option('--comment <comment>', 'Additional comment for dismissal')
   .action(async (options) => {
     const programOptions = program.opts();
