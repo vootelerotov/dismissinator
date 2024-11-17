@@ -139,7 +139,7 @@ vulnerabilitiesCommand
         repo,
         alert_number: parseInt(options.alertNumber),
         state: 'dismissed',
-        dismissal_reason: options.reason.replace(/-/g, '_'),
+        dismissed_reason: options.reason.replace(/-/g, '_'),
         dismissed_comment: options.comment || "No comment provided"
       });
 
