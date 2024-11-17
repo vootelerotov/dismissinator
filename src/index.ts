@@ -34,9 +34,10 @@ program
     });
 
     try {
-      const response = await octokit.rest.dependabot.listAlertsForOrg({
-        org: options.org,
-        state: 'open'
+      const response = await octokit.rest.dependabot.listAlertsForRepo({
+        state: 'open',
+        owner: 'sympower',
+        repo: 'msa-greece-resource-selection'
       });
 
       console.log('Found vulnerabilities:');
