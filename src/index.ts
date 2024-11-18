@@ -83,6 +83,7 @@ vulnerabilitiesCommand
         console.log(`Package Name: ${alert.dependency?.package?.name}`);
         console.log(`Severity: ${alert.security_advisory?.severity}`);
         console.log(`CVSS Score: ${alert.security_advisory?.cvss?.score}`);
+        console.log(`CVE ID: ${alert.security_advisory?.cve_id}`);
         console.log(`Created: ${alert.created_at}`);
       });
     } catch (error: any) {
