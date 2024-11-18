@@ -96,8 +96,9 @@ vulnerabilitiesCommand
   .command('dismiss')
   .description('Dismiss a vulnerability alert')
   .requiredOption('--cve-id <id>', 'CVE ID to dismiss (e.g. CVE-2024-1234)')
-  .requiredOption('--reason <reason>', 'Reason for dismissal', )
-  .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk'])
+  .addOption(new Option('--reason <reason>', 'Reason for dismissal')
+    .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk'])
+  )
   .option('--comment <comment>', 'Additional comment for dismissal')
   .action(async (options) => {
     const programOptions = program.opts();
