@@ -95,11 +95,9 @@ vulnerabilitiesCommand
 vulnerabilitiesCommand
   .command('dismiss')
   .description('Dismiss a vulnerability alert')
-  .requiredOption('--alert-number <number>', 'Alert number to dismiss')
-  .addOption(new Option('--reason <reason>', 'Reason for dismissal')
-    .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk']
-    )
-  )
+  .requiredOption('--cve-id <id>', 'CVE ID to dismiss (e.g. CVE-2024-1234)')
+  .requiredOption('--reason <reason>', 'Reason for dismissal', )
+  .choices(['fix-started', 'inaccurate', 'no-bandwidth', 'not-used', 'tolerable-risk'])
   .option('--comment <comment>', 'Additional comment for dismissal')
   .action(async (options) => {
     const programOptions = program.opts();
@@ -119,15 +117,6 @@ vulnerabilitiesCommand
     });
 
     try {
-      if (programOptions.dryRun) {
-        console.log('Dry run mode - would dismiss vulnerability:');
-        console.log(`Alert Number: ${options.alertNumber}`);
-        console.log(`Dismissal Reason: ${options.reason}`);
-        console.log(`Comment: ${options.comment || 'None'}`);
-        console.log(`Repository: ${programOptions.repo}`);
-        return;
-      }
-
       const parts = programOptions.repo.split('/');
       if (parts.length !== 2) {
         console.error('Error: Repository must be in format owner/repo');
@@ -135,16 +124,49 @@ vulnerabilitiesCommand
       }
       const [owner, repo] = parts;
 
-      await octokit.rest.dependabot.updateAlert({
+      // First fetch all open alerts
+      const response = await octokit.rest.dependabot.listAlertsForRepo({
         owner,
         repo,
-        alert_number: parseInt(options.alertNumber),
-        state: 'dismissed',
-        dismissed_reason: options.reason.replace(/-/g, '_'),
-        dismissed_comment: options.comment || "No comment provided"
+        state: 'open'
       });
 
-      console.log(`Successfully dismissed alert ${options.alertNumber} with reason: ${options.reason}`);
+      // Filter alerts matching the CVE ID
+      const matchingAlerts = response.data.filter(
+        alert => alert.security_advisory?.cve_id === options.cveId
+      );
+
+      if (matchingAlerts.length === 0) {
+        console.log(`No open alerts found matching CVE ID: ${options.cveId}`);
+        return;
+      }
+
+      console.log(`Found ${matchingAlerts.length} alert(s) matching CVE ID: ${options.cveId}`);
+
+      if (programOptions.dryRun) {
+        console.log('Dry run mode - would dismiss these alerts:');
+        matchingAlerts.forEach(alert => {
+          console.log(`\nAlert Number: ${alert.number}`);
+          console.log(`Package: ${alert.dependency?.package?.name}`);
+          console.log(`Severity: ${alert.security_advisory?.severity}`);
+        });
+        return;
+      }
+
+      // Dismiss each matching alert
+      for (const alert of matchingAlerts) {
+        await octokit.rest.dependabot.updateAlert({
+          owner,
+          repo,
+          alert_number: alert.number,
+          state: 'dismissed',
+          dismissed_reason: options.reason.replace(/-/g, '_'),
+          dismissed_comment: options.comment || "No comment provided"
+        });
+        console.log(`Dismissed alert ${alert.number} for ${alert.dependency?.package?.name}`);
+      }
+
+      console.log(`\nSuccessfully dismissed ${matchingAlerts.length} alert(s) matching ${options.cveId}`);
     } catch (error: any) {
       console.error('Error dismissing vulnerability:', error?.message || 'Unknown error');
       process.exit(1);
